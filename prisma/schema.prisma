@@ -1,0 +1,161 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// 1. Blueprints & Components Management
+model Blueprint {
+  id          String   @id @default(uuid())
+  name        String
+  config      String
+  isActive    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  templates  BlueprintTemplate[]
+  components BlueprintComponent[]
+}
+
+model BlueprintTemplate {
+  id             String   @id @default(uuid())
+  blueprintId    String
+  name           String
+  layoutPath     String
+  description    String?
+  componentPaths String
+  seoSettings    String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  blueprint Blueprint @relation(fields: [blueprintId], references: [id])
+}
+
+model BlueprintComponent {
+  id          String   @id @default(uuid())
+  blueprintId String
+  name        String
+  path        String
+  propsSchema String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  blueprint Blueprint @relation(fields: [blueprintId], references: [id])
+}
+
+// 2. Custom Data Types & Fields Management
+model CustomDataType {
+  id          String   @id @default(uuid())
+  name        String
+  slug        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  fields CustomDataField[]
+}
+
+model CustomDataField {
+  id               String   @id @default(uuid())
+  customDataTypeId String
+  name             String
+  fieldType        String
+  settings         String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  customDataType CustomDataType @relation(fields: [customDataTypeId], references: [id])
+}
+
+// 3. Pages & Content Management
+model Page {
+  id           String   @id @default(uuid())
+  title        String
+  slug         String   @unique
+  templateId   String
+  contentData  String
+  seoSettings  String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+// 4. Media Management
+model MediaFile {
+  id         String   @id @default(uuid())
+  fileName   String
+  filePath   String
+  fileType   String
+  size       Int
+  uploadedBy String
+  createdAt  DateTime @default(now())
+}
+
+// 5. User Management & Permissions
+model User {
+  id           String   @id @default(uuid())
+  username     String   @unique
+  email        String   @unique
+  passwordHash String
+  role         String
+  createdAt    DateTime @default(now())
+
+  permissions UserPermission[]
+}
+
+model UserPermission {
+  id             String   @id @default(uuid())
+  userId         String
+  permissionType String
+  createdAt      DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+// 6. SEO Management
+model SeoSetting {
+  id              String   @id @default(uuid())
+  contentType     String
+  contentId       String
+  metaTitle       String?
+  metaDescription String?
+  metaKeywords    String?
+  jsonLd          String?
+  createdAt       DateTime @default(now())
+}
+
+// 7. Analytics & Reporting
+model Analytics {
+  id             String   @id @default(uuid())
+  pageId         String
+  views          Int
+  uniqueVisitors Int
+  trafficSource  String?
+  createdAt      DateTime @default(now())
+}
+
+// 8. Performance Optimization
+model PerformanceSetting {
+  id                 String   @id @default(uuid())
+  cacheDuration      Int
+  imageOptimization  Boolean
+  createdAt          DateTime @default(now())
+}
+
+// 9. Deployment & Revisions Management
+model Deployment {
+  id           String   @id @default(uuid())
+  deploymentId String   @unique
+  status       String
+  createdAt    DateTime @default(now())
+}
+
+model Revision {
+  id           String   @id @default(uuid())
+  contentType  String
+  contentId    String
+  revisionData String
+  createdAt    DateTime @default(now())
+}
